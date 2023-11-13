@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login e Cadastro</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<div class="container">
+    <h1>Escolha uma opção:</h1>
+
+    <button onclick="redirecionar('login')">Login</button>
+    <button onclick="redirecionar('cadastro')">Cadastro</button>
+
+</div>
+
+<script>
+        function redirecionar(opcao) {
+            if (opcao === 'login') {
+                window.location.href = 'login.html';
+            } else if (opcao === 'cadastro') {
+                window.location.href = 'cadastro.html';
+            }
+        }
+</script>
+
+</body>
+</html>
