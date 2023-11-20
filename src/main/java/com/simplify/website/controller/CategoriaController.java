@@ -1,5 +1,6 @@
 package com.simplify.website.controller;
 
+import com.simplify.website.service.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.simplify.website.dto.*;
@@ -18,6 +19,8 @@ public class CategoriaController {
 
     @Autowired
     private DespesaRepository despesaRepository;
+    @Autowired
+    private CategoriaService categoriaService;
 
     @GetMapping
     public List<CategoriaResponseDTO> recuperaCategorias(){
@@ -30,14 +33,17 @@ public class CategoriaController {
         for(Integer id : data.despesas()){
             despesas.add(despesaRepository.findById(id).get());
         }
-        categoriaRepository.save(new Categoria(data.nome(), data.limite(), data.valorTotalMensal(), despesas));
-    }
+        if(categoriaService.validarNulo(data))
+            categoriaRepository.save(new Categoria(data.nome(), data.limite(), data.valorTotalMensal(), despesas));
+
+        }
 
     @PutMapping("/{id}")
     public void editarCategoria(@PathVariable Integer id, @RequestBody CategoriaRequestDTO data){
         Categoria categoria = new Categoria(data);
         categoria.setId(id);
-        categoriaRepository.save(categoria);
+        if(categoriaService.validarNulo(data))
+            categoriaRepository.save(categoria);
 
     }
 

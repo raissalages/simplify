@@ -1,20 +1,23 @@
 function enviarCadastro() {
-    // Obtenha os valores dos campos do formulário
     var nome = document.getElementById('nomeCompleto').value;
     var email = document.getElementById('email').value;
     var senha = document.getElementById('senha').value;
     var dataNascimento = document.getElementById('dataNascimento').value;
     var genero = document.getElementById('genero').value;
 
-    // Crie um objeto com os dados do usuário
-    var usuario = {
-        nomeCompleto: nome,
-        senha: senha,
-        email: email,
-        genero: genero,
-        dataNascimento: dataNascimento,
-        despesas: []
-    };
+    if(!(nome && email && senha && dataNascimento && genero)){
+        alert('Preencha todos os campos.')
+    }else{
+        var usuario = {
+            nomeCompleto: nome,
+            senha: senha,
+            email: email,
+            genero: genero,
+            dataNascimento: dataNascimento,
+            despesas: []
+        };
+    }
+
 
     // Realize uma requisição POST para o endpoint do backend
     fetch('http://localhost:8080/usuario/cadastrar', {
@@ -27,10 +30,10 @@ function enviarCadastro() {
     .then(response => {
     // Verifique se a resposta indica sucesso (status 2xx)
            if (response.status === 200) {
-              // Login bem-sucedido
+              // Deu certo
               window.location.href = 'paginainicial.html';
           } else if (response.status === 401) {
-              // Credenciais inválidas
+              // Não deu
               alert('Tente novamente.');
        }})
        .catch(error => {
@@ -55,18 +58,17 @@ function realizarLogin() {
        })
        .then(response => {
            if (response.status === 200) {
-               if (data.token) {
+
                           // Armazenar o token no localStorage
-                          localStorage.setItem('token', data.token);
+                          //localStorage.setItem('token', data.token);
 
                           // Redirecionar para a página principal
                           window.location.href = 'paginainicial.html';
-                          }
+
            } else if (response.status === 401) {
                // Credenciais inválidas
                alert('Credenciais incorretas. Tente novamente.');
            } else {
-               // Outro erro
                alert('Erro ao verificar credenciais. Tente novamente.');
            }
        })
@@ -80,7 +82,6 @@ function obterToken() {
     return localStorage.getItem('token');
 }
 
-// Exemplo de como incluir o token nas solicitações futuras
 function fazerSolicitacaoProtegida() {
     const token = obterToken();
 
@@ -91,10 +92,9 @@ function fazerSolicitacaoProtegida() {
         },
     })
     .then(response => {
-        // Processar a resposta do servidor
+        console.log("teste")
     })
     .catch(error => {
         console.error('Erro na solicitação protegida:', error);
-        // Lidar com erros
     });
 }

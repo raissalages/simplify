@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class Jwt {
     private static final String segredo = "seuSegredoAqui";
-    private static final long tempoExpiracao = 86400000; // 24 horas em milissegundos
+    private static final long tempoExpiracao = 86400000; // 24h de autenticacao
 
     public static String gerarToken(Usuario usuario) {
         Date dataExpiracao = new Date(System.currentTimeMillis() + tempoExpiracao);

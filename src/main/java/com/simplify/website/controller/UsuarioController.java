@@ -32,8 +32,6 @@ public class UsuarioController {
         return usuarioRepository.findAll().stream().map(UsuarioResponseDTO::new).toList();
     }
 
-
-
     @PostMapping
     public void salvarUsuario(@RequestBody UsuarioRequestDTO data){
         List<Despesa> despesas = new ArrayList<>();
@@ -63,13 +61,11 @@ public class UsuarioController {
         // Recupere o usuário do banco de dados usando o serviço
         Usuario usuario = usuarioService.autenticarUsuario(data.email(), data.senha());
         if (usuario != null) {
-            String token = Jwt.gerarToken(usuario);
-            // Inclua o token na resposta
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + token);
+            //String token = Jwt.gerarToken(usuario);
+            //HttpHeaders headers = new HttpHeaders();
+            //headers.add("Authorization", "Bearer " + token);
             return new ResponseEntity<>("Login bem-sucedido!", HttpStatus.OK);
         } else {
-            // Credenciais inválidas
             return new ResponseEntity<>("Credenciais inválidas", HttpStatus.UNAUTHORIZED);
         }
     }
