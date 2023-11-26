@@ -19,6 +19,10 @@ public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
     @Column
     private String nome;
     @Column

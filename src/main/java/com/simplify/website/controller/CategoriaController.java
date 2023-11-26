@@ -1,6 +1,7 @@
 package com.simplify.website.controller;
 
 import com.simplify.website.service.CategoriaService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.simplify.website.dto.*;
@@ -38,13 +39,17 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public void salvarCategoria(@RequestBody CategoriaRequestDTO data){
-        List<Despesa> despesas = new ArrayList<>();
-        for(Integer id : data.despesas()){
-            despesas.add(despesaRepository.findById(id).get());
+    public void salvarCategoria(@RequestBody CategoriaRequestDTO data, HttpSession session){
+
+        UsuarioAutenticado usuarioAutenticado = (UsuarioAutenticado) session.getAttribute("usuarioAutenticado");
+        if (usuarioAutenticado != null) {
+            List<Despesa> despesas = new ArrayList<>();
+            for (Integer id : data.despesas()) {
+                despesas.add(despesaRepository.findById(id).get());
+            }
+            if (categoriaService.validarNulo(data))
+                categoriaRepository.save(new Categoria(data.nome(), data.limite(), data.valorTotalMensal(), despesas));
         }
-        if(categoriaService.validarNulo(data))
-            categoriaRepository.save(new Categoria(data.nome(), data.limite(), data.valorTotalMensal(), despesas));
     }
 
     @PutMapping("/{id}")

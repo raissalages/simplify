@@ -32,6 +32,8 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Despesa> despesas;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private List<Categoria> categorias;
     public Usuario(UsuarioRequestDTO data){
         this.nomeCompleto = data.nomeCompleto();
         this.email = data.email();

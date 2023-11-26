@@ -63,6 +63,28 @@
 
 <h1>Lista de Despesas</h1>
 <div class="container">
+    <div id="filtros">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" oninput="aplicarFiltros()">
+
+        <label for="periodo">Período:</label>
+        <input type="date" id="periodo"> até <input type="date" id="filtroPeriodoFim">
+
+        <label for="categoria">Categoria:</label>
+        <select id="categoria" onchange="aplicarFiltros()">
+            <option value="">Categorias</option>
+        </select>
+
+        <label for="valorMin">Valor Mínimo:</label>
+        <input type="number" id="valorMin" min="0" oninput="aplicarFiltros()">
+
+        <label for="valorMax">Valor Máximo:</label>
+        <input type="number" id="valorMax" min="0" oninput="aplicarFiltros()">
+
+        <button onclick="limparFiltros()">Limpar Filtros</button>
+    </div>
+
+
     <table id="tabelaDespesas">
         <thead>
         <tr>
@@ -93,6 +115,36 @@
         return dataFormatada;
     }
 
+    function carregarCategorias() {
+    const selectCategoria = document.getElementById('categoria');
+
+    // Limpa as opções existentes
+    selectCategoria.innerHTML = '<option value="">Categorias</option>';
+
+    // Busca as categorias no backend
+    fetch('http://localhost:8080/categoria/listar-categorias')
+        .then(response => response.json())
+        .then(categorias => {
+            categorias.forEach(categoria => {
+                const option = document.createElement('option');
+                //option.value = categoria.id;
+                option.textContent = categoria.nome;
+                selectCategoria.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Erro ao buscar categorias:', error));
+    }
+
+    function obterNomeCategoria(id) {
+        return fetch(`http://localhost:8080/categoria/${id}`)
+            .then(response => response.json())
+            .then(categoria => categoria.nome)
+            .catch(error => {
+                console.error(`Erro ao obter categoria com ID ${id}:`, error);
+                return 'Categoria desconhecida';
+            });
+    }
+
     // Função para buscar e exibir despesas
     function carregarDespesas() {
         fetch('http://localhost:8080/despesa/despesas')
@@ -100,15 +152,7 @@
             .then(despesas => {
                 const listaDespesas = document.getElementById('listaDespesas');
 
-                function obterNomeCategoria(id) {
-                    return fetch(`http://localhost:8080/categoria/${id}`)
-                        .then(response => response.json())
-                        .then(categoria => categoria.nome)
-                        .catch(error => {
-                            console.error(`Erro ao obter categoria com ID ${id}:`, error);
-                            return 'Categoria desconhecida';
-                        });
-                }
+
 
                 despesas.forEach(despesa => {
                     const itemLista = document.createElement('tr');
@@ -131,6 +175,7 @@
                         listaDespesas.appendChild(itemLista);
                     });
                 });
+                aplicarFiltros();
             })
             .catch(error => console.error('Erro ao buscar despesas:', error));
     }
@@ -156,6 +201,53 @@
         ordenacaoAscendente = !ordenacaoAscendente;
     }
 
+function aplicarFiltros() {
+    const filtroNome = document.getElementById('nome').value.toLowerCase();
+    const filtroPeriodo = document.getElementById('periodo').value;
+    const periodoFim = document.getElementById('filtroPeriodoFim').value;
+    const filtroCategoria = document.getElementById('categoria').value;
+    const filtroValorMin = parseFloat(document.getElementById('valorMin').value) || 0;
+    const filtroValorMax = parseFloat(document.getElementById('valorMax').value) || Number.MAX_VALUE;
+
+    console.log(filtroCategoria);
+
+    const listaDespesas = document.getElementById('listaDespesas');
+    const linhas = Array.from(listaDespesas.getElementsByTagName('tr'));
+
+    linhas.forEach(linha => {
+        const colunas = linha.getElementsByTagName('td');
+
+        const nome = colunas[0].textContent.toLowerCase();
+        const valor = parseFloat(colunas[1].textContent);
+        const periodo = colunas[2].textContent;
+        const idCategoria = colunas[3].textContent;
+
+        console.log(idCategoria);
+
+        const atendeFiltros =
+            (filtroNome === '' || nome.includes(filtroNome)) &&
+            (filtroPeriodo === '' || periodo === filtroPeriodo) &&
+            (valor >= filtroValorMin && valor <= filtroValorMax) &&
+            (filtroCategoria === '' || idCategoria === filtroCategoria);
+
+        linha.style.display = atendeFiltros ? '' : 'none';
+    });
+}
+
+function limparFiltros() {
+    document.getElementById('nome').value = '';
+    document.getElementById('periodo').value = '';
+    document.getElementById('valorMin').value = '';
+    document.getElementById('valorMax').value = '';
+    document.getElementById('filtroPeriodoFim').value = '';
+    document.getElementById('categoria').value = '';
+
+
+    // Restaura a exibição de todas as linhas
+    const listaDespesas = document.getElementById('listaDespesas');
+    const linhas = Array.from(listaDespesas.getElementsByTagName('tr'));
+    linhas.forEach(linha => linha.style.display = '');
+}
 
     function excluirDespesa(id){
     const itemLista = document.getElementById(`despesa-${id}`);
@@ -173,7 +265,15 @@
     .catch(error => console.error('Erro ao excluir despesa:', error));
     }
     // Chame a função ao carregar a página
+
+
+    carregarCategorias();
+
+
+
     carregarDespesas();
+
+
 </script>
 
 </body>

@@ -62,7 +62,6 @@ async function cadastrarDespesa() {
     };
     alert(despesa);
     try {
-        alert("Antes da requisição");
 
         const response = await fetch("http://localhost:8080/despesa/cadastrar", {
             method: "POST",
@@ -71,7 +70,6 @@ async function cadastrarDespesa() {
             },
             body: JSON.stringify(despesa),
         });
-        alert("depois da req");
 
 
         if (response.ok) {
