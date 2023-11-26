@@ -1,5 +1,6 @@
 package com.simplify.website.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.simplify.website.dto.DespesaRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,11 +23,12 @@ public class Despesa {
     private double valor;
     @Column
     private Date data;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "categoria_id")
+    @JsonBackReference
     private Categoria categoria;
 
     public Despesa(DespesaRequestDTO data) {

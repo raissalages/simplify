@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listagem de Despesas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%; /* Ajuste a largura conforme necessário */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Lista de Despesas</h1>
+<div class="container">
+    <table id="tabelaDespesas">
+        <thead>
+        <tr>
+            <th onclick="ordenarTabela(0)">Descrição</th>
+            <th onclick="ordenarTabela(1)">Valor</th>
+            <th onclick="ordenarTabela(2)">Data</th>
+            <th onclick="ordenarTabela(3)">Categoria</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody id="listaDespesas"></tbody>
+    </table>
+
+</div>
+<script>
+    function formatarData(dataString) {
+        // Cria um objeto Date a partir da string
+        const data = new Date(dataString);
+
+        // Obtém dia, mês e ano
+        const dia = String(data.getDate()).padStart(2, '0');
+        const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa do zero, então adicionamos 1
+        const ano = data.getFullYear();
+
+        // Formata a data no formato desejado (dd/MM/yyyy)
+        const dataFormatada = `${dia}/${mes}/${ano}`;
+
+        return dataFormatada;
+    }
+
+    // Função para buscar e exibir despesas
+    function carregarDespesas() {
+        fetch('http://localhost:8080/despesa/despesas')
+            .then(response => response.json())
+            .then(despesas => {
+                const listaDespesas = document.getElementById('listaDespesas');
+
+                function obterNomeCategoria(id) {
+                    return fetch(`http://localhost:8080/categoria/${id}`)
+                        .then(response => response.json())
+                        .then(categoria => categoria.nome)
+                        .catch(error => {
+                            console.error(`Erro ao obter categoria com ID ${id}:`, error);
+                            return 'Categoria desconhecida';
+                        });
+                }
+
+                despesas.forEach(despesa => {
+                    const itemLista = document.createElement('tr');
+                    itemLista.id = `despesa-${despesa.id}`;  // Adicione o ID ao elemento <tr>
+                    const dataFormatada = formatarData(despesa.data);
+                    obterNomeCategoria(despesa.categoria)
+                    .then(nomeCategoria => {
+                        // Preencher a linha da tabela com os detalhes da despesa
+                        itemLista.innerHTML = `
+                            <td>${despesa.descricao}</td>
+                            <td>${despesa.valor}</td>
+                            <td>${dataFormatada}</td>
+                            <td>${nomeCategoria}</td>
+                            <td>
+                                <button onclick="editarDespesa(${despesa.id})">Editar</button>
+                                <button onclick="excluirDespesa(${despesa.id})">Excluir</button>
+                            </td>
+                        `;
+
+                        listaDespesas.appendChild(itemLista);
+                    });
+                });
+            })
+            .catch(error => console.error('Erro ao buscar despesas:', error));
+    }
+
+    function ordenarTabela(coluna) {
+        const tabela = document.getElementById('tabelaDespesas');
+        const linhas = Array.from(tabela.getElementsByTagName('tr'));
+        const cabecalho = linhas.shift();
+
+        linhas.sort((a, b) => {
+            const valorA = a.getElementsByTagName('td')[coluna].textContent.trim();
+            const valorB = b.getElementsByTagName('td')[coluna].textContent.trim();
+
+            return ordenacaoAscendente ? valorA.localeCompare(valorB) : valorB.localeCompare(valorA);
+        });
+
+        // Adiciona novamente o cabeçalho à tabela
+        tabela.innerHTML = '';
+        tabela.appendChild(cabecalho);
+        linhas.forEach(linha => tabela.appendChild(linha));
+
+        // Inverte a ordem de classificação para a próxima vez
+        ordenacaoAscendente = !ordenacaoAscendente;
+    }
+
+
+    function excluirDespesa(id){
+    const itemLista = document.getElementById(`despesa-${id}`);
+    itemLista.remove();
+
+    fetch(`http://localhost:8080/despesa/${id}`, {
+        method: 'DELETE',
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro ao excluir despesa: ${response.status}`);
+        }
+        console.log('Despesa excluída com sucesso!');
+    })
+    .catch(error => console.error('Erro ao excluir despesa:', error));
+    }
+    // Chame a função ao carregar a página
+    carregarDespesas();
+</script>
+
+</body>
+</html>

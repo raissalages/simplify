@@ -3,14 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login e Cadastro</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Simplify - Controle de Gastos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
 
+        #menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #menu a {
+            text-decoration: none;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #menu a:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>Bem-vindo!</h1>
 
+<h1>Bem-vindo ao Simplify - Controle de Gastos</h1>
+
+<div id="menu">
+    <a href="/cadastro" title="Cadastro de Usuário">Cadastro</a>
+    <a href="/listagemdespesas" title="Listagem de Despesas">Listagem de Despesas</a>
+    <a href="/cadastrodespesa" title="Cadastro de Despesa">Cadastro de Despesa</a>
+    <a href="/categorias" title="Categorias">
+        <span>Categorias</span>
+        <ul>
+            <li><a href="/cadastronovacategoria">Cadastrar Nova Categoria</a></li>
+            <li><a href="/controleporcategoria">Controle por Categoria</a></li>
+        </ul>
+    </a>
 </div>
 
 </body>

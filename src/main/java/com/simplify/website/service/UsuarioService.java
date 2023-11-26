@@ -1,18 +1,61 @@
 package com.simplify.website.service;
 
+import com.google.protobuf.ServiceException;
+import com.simplify.website.dto.UsuarioRequestDTO;
+import com.simplify.website.model.Despesa;
 import com.simplify.website.model.Usuario;
+import com.simplify.website.repository.DespesaRepository;
 import com.simplify.website.repository.UsuarioRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
-    public Usuario autenticarUsuario(String email, String senha) {
-        return usuarioRepository.findByEmailAndSenha(email, senha);
+    @Autowired
+    private DespesaRepository despesaRepository;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+
+    public Usuario autenticarUsuario(String email, String senha, HttpSession session) {
+        try {
+            Usuario usuario =  autenticacaoService.autenticarUsuario(email,senha, session);
+
+            System.out.println("Autenticacao retorna nulo (teste): " + usuario);
+            return autenticacaoService.autenticarUsuario(email,senha, session);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+
+    public void cadastrarNovoUsuario(UsuarioRequestDTO usuario) throws EmailDuplicadoException {
+        if (usuarioRepository.findByEmail(usuario.email()) != null) {
+            throw new EmailDuplicadoException("O e-mail já está em uso");
+        }
+        else {
+            List<Despesa> despesas = new ArrayList<>();
+            // Verifica se a lista de despesas não é nula antes de iterar
+            if (usuario.despesas() != null) {
+                for(Integer id : usuario.despesas()){
+                    Despesa despesa = despesaRepository.findById(id).orElse(null);
+
+                    // Verifica se a despesa encontrada não é nula antes de adicioná-la à lista
+                    if (despesa != null) {
+                        despesas.add(despesa);
+                    }
+                }
+            }
+            usuarioRepository.save(new Usuario(usuario.nomeCompleto(), usuario.email(), usuario.senha(), usuario.genero(), usuario.dataNascimento(), despesas));
+        }
     }
 
 }

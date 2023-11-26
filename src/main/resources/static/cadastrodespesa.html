@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <title>Cadastro de Despesa</title>
+</head>
+<body>
+
+<h2>Cadastro de Despesa</h2>
+<div class="container">
+    <form id="despesaForm">
+        <!-- Campo de Descrição -->
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" name="descricao" required><br>
+
+        <!-- Campo de Valor -->
+        <label for="valor">Valor:</label>
+        <input type="number" id="valor" name="valor" step="0.01" required><br>
+
+        <!-- Campo de Data -->
+        <label for="data">Data:</label>
+        <input type="date" id="data" name="data" required><br>
+
+        <!-- Campo de Categoria -->
+        <label for="categoria">Categoria:</label>
+        <select id="categoria" name="categoria" required>
+            <!-- Opções de categoria serão preenchidas dinamicamente do banco de dados -->
+        </select>
+        <button type="button" id="cadastrarDespesaBtn">Cadastrar Nova Categoria</button><br>
+
+        <!-- Botão de Submit -->
+        <button type="button" onclick="cadastrarDespesa()">Cadastrar Despesa</button>
+    </form>
+</div>
+<script>
+
+async function cadastrarDespesa() {
+    const descricao = document.getElementById('descricao').value;
+    const valor = document.getElementById('valor').value;
+
+    const data = new Date(document.getElementById('data').value);
+    const dataFormatada = data.toISOString().split('T')[0];
+
+    const categoria = document.getElementById('categoria').value;
+
+    if (!(descricao && valor && data && categoria)) {
+        alert("Preencha todos os campos.");
+        return;
+    }
+
+
+
+    const despesa = {
+        descricao: descricao,
+        valor: parseFloat(valor), // Converte para número
+        data: dataFormatada,
+        categoria: parseInt(categoria)
+    };
+    alert(despesa);
+    try {
+        alert("Antes da requisição");
+
+        const response = await fetch("http://localhost:8080/despesa/cadastrar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(despesa),
+        });
+        alert("depois da req");
+
+
+        if (response.ok) {
+            const mensagem = await response.text();
+            alert(mensagem);
+            // Adicione qualquer lógica adicional aqui após cadastrar a despesa com sucesso
+        } else {
+            const erro = await response.text();
+            alert("Erro ao cadastrar despesa: " + erro);
+        }
+    } catch (error) {
+        console.error("Erro ao processar a solicitação:", error);
+    }
+}
+    async function cadastrarNovaCategoria() {
+        const novaCategoria = prompt("Digite o nome da nova categoria:");
+        if (novaCategoria) {
+            try {
+                const response = await fetch("http://localhost:8080/cadastrar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ nome: novaCategoria }),
+                });
+
+                if (response.ok) {
+                    alert("Nova categoria cadastrada com sucesso!");
+                    await atualizarListaCategorias();
+                } else {
+                    alert("Falha ao cadastrar nova categoria. Verifique os dados e tente novamente.");
+                }
+            } catch (error) {
+                console.error("Erro ao processar a solicitação:", error);
+            }
+        }
+    }
+
+    async function atualizarListaCategorias() {
+        try {
+            const response = await fetch("/categoria/listar-categorias");
+            if (response.ok) {
+                const categorias = await response.json();
+                console.log("Categorias obtidas:", categorias);
+
+                const categoriaDropdown = document.getElementById("categoria");
+
+                // Limpa as opções atuais
+                 categoriaDropdown.innerHTML = "";
+
+            // Adiciona uma opção padrão indicando que nenhuma categoria foi selecionada
+            const defaultOption = document.createElement("option");
+            defaultOption.text = "Selecione uma categoria";
+            categoriaDropdown.appendChild(defaultOption);
+
+            // Adiciona as opções existentes do banco de dados
+            categorias.forEach(categoria => {
+                const option = document.createElement("option");
+                option.value = categoria.id;
+                option.text = categoria.nome;
+                categoriaDropdown.appendChild(option);
+            });
+            } else {
+                alert("Falha ao obter a lista de categorias. Tente novamente mais tarde.");
+            }
+        } catch (error) {
+            console.error("Erro ao processar a solicitação:", error);
+        }
+    }
+
+    document.getElementById("cadastrarDespesaBtn").addEventListener("click", cadastrarNovaCategoria);
+
+    // Adicione esta chamada inicial para carregar as categorias ao carregar a página
+    document.addEventListener("DOMContentLoaded", atualizarListaCategorias);
+
+    // ... Sua função cadastrarDespesa anterior ...
+
+</script>
+
+</body>
+</html>

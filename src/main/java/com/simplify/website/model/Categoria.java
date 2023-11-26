@@ -1,6 +1,7 @@
 package com.simplify.website.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.simplify.website.dto.CategoriaRequestDTO;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.*;
@@ -25,6 +26,7 @@ public class Categoria {
     @Column
     private double valorTotalMensal;
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Despesa> despesas;
 
 

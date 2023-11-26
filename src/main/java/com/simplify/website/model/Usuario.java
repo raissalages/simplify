@@ -21,7 +21,6 @@ public class Usuario {
     private Integer id;
     @Column
     private String nomeCompleto;
-
     @Column(unique=true)
     private String email;
     @Column
@@ -61,4 +60,18 @@ public class Usuario {
         this.genero = genero;
         this.dataNascimento = dataNascimento;
     }
+
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "id=" + id +
+                ", nomeCompleto='" + nomeCompleto + '\'' +
+                ", email='" + email + '\'' +
+                ", senha='" + senha + '\'' +
+                ", genero='" + genero + '\'' +
+                ", dataNascimento=" + dataNascimento +
+                ", despesas=" + (despesas != null ? despesas.size() + " despesas" : "null") +
+                '}';
+    }
+
 }

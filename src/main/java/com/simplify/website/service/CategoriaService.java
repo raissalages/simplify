@@ -9,8 +9,8 @@ import org.springframework.stereotype.*;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoriaService {
@@ -57,4 +57,19 @@ public class CategoriaService {
     public boolean validarNulo(CategoriaRequestDTO data){
         return (!data.nome().isBlank() && !data.nome().isEmpty()) || (!(data.limite() <= 0));
     }
+
+    public List<String> listarNomesCategorias() {
+        List<String> categorias = new ArrayList<>();
+
+        for (Categoria categoria : categoriaRepository.findAll()
+             ) {
+            categorias.add(categoria.getNome());
+        }
+        return categorias;
+    }
+
+    public List<Categoria> listarCategorias() {
+        return categoriaRepository.findAll();
+    }
+
 }

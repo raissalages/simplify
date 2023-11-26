@@ -27,6 +27,16 @@ public class CategoriaController {
         return categoriaRepository.findAll().stream().map(CategoriaResponseDTO::new).toList();
     }
 
+    @GetMapping("/listar-categorias")
+    public List<Categoria> listarCategorias() {
+        return categoriaService.listarCategorias();
+    }
+
+    @GetMapping("{id}")
+    public Categoria buscaPorId(@PathVariable Integer id){
+        return categoriaRepository.findById(id).get();
+    }
+
     @PostMapping
     public void salvarCategoria(@RequestBody CategoriaRequestDTO data){
         List<Despesa> despesas = new ArrayList<>();
@@ -35,8 +45,7 @@ public class CategoriaController {
         }
         if(categoriaService.validarNulo(data))
             categoriaRepository.save(new Categoria(data.nome(), data.limite(), data.valorTotalMensal(), despesas));
-
-        }
+    }
 
     @PutMapping("/{id}")
     public void editarCategoria(@PathVariable Integer id, @RequestBody CategoriaRequestDTO data){

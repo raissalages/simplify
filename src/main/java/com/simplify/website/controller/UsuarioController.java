@@ -1,7 +1,9 @@
 package com.simplify.website.controller;
 
+import com.simplify.website.service.EmailDuplicadoException;
 import com.simplify.website.service.UsuarioService;
 import com.simplify.website.util.Jwt;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -51,20 +53,27 @@ public class UsuarioController {
     }
 
     @PostMapping("/cadastrar")
-    public void cadastrarNovoUsuario(@RequestBody UsuarioRequestDTO data){
-        usuarioRepository.save(new Usuario(data.nomeCompleto(),  data.email(), data.senha(),data.genero(), data.dataNascimento()));
+    public ResponseEntity<String> cadastrarNovoUsuario(@RequestBody UsuarioRequestDTO data){
 
+        try {
+            usuarioService.cadastrarNovoUsuario(data);
+            return new ResponseEntity<>("Usuário registrado com sucesso", HttpStatus.CREATED);
+        } catch (EmailDuplicadoException e) {
+            return new ResponseEntity<>("E-mail já em uso", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> autenticarUsuario(@RequestBody UsuarioLoginDTO data) {
+    public ResponseEntity<String> autenticarUsuario(@RequestBody UsuarioLoginDTO data, HttpSession session) {
         // Recupere o usuário do banco de dados usando o serviço
-        Usuario usuario = usuarioService.autenticarUsuario(data.email(), data.senha());
+        System.out.println(session.getId());
+        Usuario usuario = usuarioService.autenticarUsuario(data.email(), data.senha(), session);
         if (usuario != null) {
             //String token = Jwt.gerarToken(usuario);
             //HttpHeaders headers = new HttpHeaders();
             //headers.add("Authorization", "Bearer " + token);
-            return new ResponseEntity<>("Login bem-sucedido!", HttpStatus.OK);
+            System.out.println("Usuario controller /login retornando token: " + session.getId());
+            return new ResponseEntity<>(session.getId(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Credenciais inválidas", HttpStatus.UNAUTHORIZED);
         }
