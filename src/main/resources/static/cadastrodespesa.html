@@ -30,14 +30,91 @@
         <select id="categoria" name="categoria" required>
             <!-- Opções de categoria serão preenchidas dinamicamente do banco de dados -->
         </select>
+
         <button type="button" id="cadastrarDespesaBtn">Cadastrar Nova Categoria</button><br>
 
         <!-- Botão de Submit -->
         <button type="button" onclick="cadastrarDespesa()">Cadastrar Despesa</button>
     </form>
 </div>
-<script>
 
+
+<!-- Modal para cadastrar nova categoria -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModal()">&times;</span>
+        <h2>Cadastrar Nova Categoria</h2>
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" placeholder="Digite o nome da categoria">
+
+        <label for="limite">Limite:</label>
+        <input type="number" id="limite" placeholder="Digite o limite da categoria">
+
+        <button onclick="cadastrarCategoria()">Cadastrar Categoria</button>
+    </div>
+</div>
+
+
+<script>
+function abrirModal() {
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    // Função para fechar o modal
+    function fecharModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    // Adicione um ouvinte de evento para abrir o modal quando o botão for clicado
+    document.getElementById('cadastrarDespesaBtn').addEventListener('click', abrirModal);
+
+function cadastrarCategoria() {
+        const nome = document.getElementById('nome').value;
+        const limite = parseFloat(document.getElementById('limite').value);
+
+        if (!nome || isNaN(limite)) {
+            return;
+        }
+
+        // Recupera o ID do usuário da sessão (substitua pelo seu método real de obtenção do ID do usuário)
+
+        // Cria o objeto de categoria
+        const categoria = {
+            nome: nome,
+            limite: limite,
+            valorTotalMensal: 0.0,
+            despesas: []
+        };
+
+        // Simula o envio do JSON para o servidor (substitua pelo seu método real de envio)
+        enviarCategoriaParaServidor(categoria);
+    }
+
+    function obterIdUsuarioDaSessao() {
+        // Substitua esta função pela lógica real de obtenção do ID do usuário da sessão
+        // Pode ser armazenado no localStorage, sessionStorage, cookie, etc.
+        return 32;
+    }
+
+    function enviarCategoriaParaServidor(categoria) {
+        // Substitua este trecho pelo código real para enviar a categoria para o servidor
+        // Pode usar fetch, XMLHttpRequest ou outra biblioteca de requisições HTTP
+        fetch('http://localhost:8080/categoria', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(categoria),
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Categoria cadastrada com sucesso!');
+            } else {
+                alert('Erro ao cadastrar categoria.');
+            }
+        })
+        .catch(error => console.error('Erro na requisição:', error));
+    }
 async function cadastrarDespesa() {
     const descricao = document.getElementById('descricao').value;
     const valor = document.getElementById('valor').value;
@@ -84,6 +161,7 @@ async function cadastrarDespesa() {
         console.error("Erro ao processar a solicitação:", error);
     }
 }
+/*
     async function cadastrarNovaCategoria() {
         const novaCategoria = prompt("Digite o nome da nova categoria:");
         if (novaCategoria) {
@@ -107,7 +185,7 @@ async function cadastrarDespesa() {
             }
         }
     }
-
+*/
     async function atualizarListaCategorias() {
         try {
             const response = await fetch("/categoria/listar-categorias");
@@ -140,7 +218,7 @@ async function cadastrarDespesa() {
         }
     }
 
-    document.getElementById("cadastrarDespesaBtn").addEventListener("click", cadastrarNovaCategoria);
+    document.getElementById("cadastrarDespesaBtn").addEventListener("click", cadastrarCategoria);
 
     // Adicione esta chamada inicial para carregar as categorias ao carregar a página
     document.addEventListener("DOMContentLoaded", atualizarListaCategorias);

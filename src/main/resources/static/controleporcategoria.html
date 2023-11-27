@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balanço de Categorias</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+        }
+
+        #menu-categorias {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            width: 200px;
+        }
+
+        #conteudo {
+            padding: 20px;
+            flex: 1;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        .verde {
+            color: green;
+        }
+
+        .vermelho {
+            color: red;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .editar, .excluir {
+            text-decoration: none;
+            padding: 4px 8px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .editar {
+            background-color: #4caf50;
+        }
+
+        .editar:hover {
+            background-color: #45a049;
+        }
+
+        .excluir {
+            background-color: #f44336;
+        }
+
+        .excluir:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Estilo para o pop-up */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup {
+            background-color: #fefefe;
+            padding: 20px;
+            width: 300px;
+            margin: auto;
+        }
+
+        .fechar-popup {
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="menu-categorias">
+    <h2>Categorias</h2>
+    <select id="categoria" onchange="carregarBalanco()">
+        <option value="">Selecione uma Categoria</option>
+    </select>
+</div>
+
+<div id="conteudo">
+    <table>
+        <thead>
+        <tr>
+            <th>Limite</th>
+            <th>Gastos</th>
+            <th>Balanço</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody id="balanco-categoria"></tbody>
+    </table>
+</div>
+
+<!-- Pop-up de edição -->
+<div class="overlay" id="overlay">
+    <div class="popup">
+        <span class="fechar-popup" onclick="fecharPopup()">&times;</span>
+        <h3>Editar Categoria</h3>
+        <label for="editaNome">Nome:</label>
+        <input type="text" id="editaNome">
+        <label for="editaValor">Valor Mensal:</label>
+        <input type="number" id="editaValor">
+        <button onclick="editarCategoria()">Salvar</button>
+    </div>
+</div>
+
+<script>
+    function carregarCategorias() {
+        const selectCategoria = document.getElementById('categoria');
+
+        // Limpa as opções existentes
+        selectCategoria.innerHTML = '<option value="">Selecione uma Categoria</option>';
+
+        // Busca as categorias no backend
+        fetch('http://localhost:8080/categoria/listar-categorias')
+            .then(response => response.json())
+            .then(categorias => {
+                categorias.forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.textContent = categoria.nome;
+                    selectCategoria.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erro ao buscar categorias:', error));
+    }
+
+    function carregarBalanco() {
+        const selectCategoria = document.getElementById('categoria');
+        const balancoCategoria = document.getElementById('balanco-categoria');
+
+        // Limpa o conteúdo existente
+        balancoCategoria.innerHTML = '';
+
+        const categoriaSelecionada = selectCategoria.value;
+
+        if (categoriaSelecionada === '') {
+            return;
+        }
+
+        // Obtém o ID da categoria
+        fetch('http://localhost:8080/categoria/listar-categorias')
+            .then(response => response.json())
+            .then(categorias => {
+                const categoria = categorias.find(cat => cat.nome === categoriaSelecionada);
+
+                if (categoria) {
+                    const { limite, valorTotalMensal } = categoria;
+                    const diferenca = valorTotalMensal - limite;
+
+                    const linhaTabela = document.createElement('tr');
+
+                    linhaTabela.innerHTML = `
+                        <td>${limite}</td>
+                        <td>${valorTotalMensal}</td>
+                        <td class="${diferenca >= 0 ? 'vermelho' : 'verde'}">${diferenca}</td>
+                        <td class="acoes">
+                            <a class="editar" href="#" onclick="abrirPopup('${categoria.id}', '${categoria.nome}', '${categoria.valorTotalMensal}')">Editar</a>
+                            <a class="excluir" href="#" onclick="excluirCategoria('${categoria.id}')">Excluir</a>
+                        </td>
+                    `;
+
+                    balancoCategoria.appendChild(linhaTabela);
+                } else {
+                    console.error('Categoria não encontrada');
+                }
+            })
+            .catch(error => console.error('Erro ao obter categorias:', error));
+    }
+
+    function abrirPopup(id, nome, valorTotalMensal) {
+        const editaNome = document.getElementById('editaNome');
+        const editaValor = document.getElementById('editaValor');
+        const btnEditarCategoria = document.getElementById('btnEditarCategoria');
+
+        editaNome.value = nome;
+        editaValor.value = valorTotalMensal;
+     // Atribua dinamicamente o ID da categoria ao botão "Salvar"
+        btnEditarCategoria.setAttribute('data-categoria-id', id);
+
+        // Adicione um evento de clique ao botão "Salvar"
+        btnEditarCategoria.addEventListener('click', () => editarCategoria(id));
+
+        // Exibe o pop-up
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function fecharPopup() {
+        // Oculta o pop-up
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function editarCategoria(id) {
+        const nome = document.getElementById('editaNome').value;
+        const valorMensalTotal = document.getElementById('editaValor').value;
+
+        const novoValor = parseFloat(valorMensalTotal.value);
+        const categoryData = {};
+
+        // Adicionar campos ao objeto apenas se eles foram alterados
+        if (novoValor && novoValor !== categoryData.valorMensalTotal) {
+            categoryData.valorMensalTotal = novoValor;
+        }
+
+        if (nome && nome !== categoryData.nome) {
+            categoryData.nome = nome;
+        }
+        // Realize a lógica de envio do método PATCH para atualizar a categoria com o ID fornecido
+        fetch(`http://localhost:8080/categoria/salvar/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Adicione outros cabeçalhos conforme necessário, por exemplo, token de autenticação
+                },
+                body: JSON.stringify(categoryData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro no pedido: ${response.status} - ${response.statusText}`);
+                }
+                // Lógica adicional após a atualização bem-sucedida (por exemplo, exibir uma mensagem)
+                alert('Alterações na categoria salvas com sucesso!');
+            })
+            .catch(error => {
+                console.error('Erro ao salvar alterações na categoria:', error);
+                // Lógica adicional para lidar com erros, se necessário
+                alert('Erro ao salvar alterações na categoria. Por favor, tente novamente.');
+            });
+                    fecharPopup();
+    }
+
+    function excluirCategoria(id) {
+        console.log(`Excluir categoria com ID ${id}`);
+        // Implemente a lógica de exclusão aqui
+    }
+
+    // Chame a função ao carregar a página
+    carregarCategorias();
+</script>
+
+</body>
+</html>

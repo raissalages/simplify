@@ -4,6 +4,7 @@ import com.simplify.website.dto.*;
 import com.simplify.website.model.*;
 import com.simplify.website.repository.CategoriaRepository;
 import com.simplify.website.repository.DespesaRepository;
+import com.simplify.website.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 
@@ -19,6 +20,9 @@ public class CategoriaService {
     private CategoriaRepository categoriaRepository;
     @Autowired
     private DespesaRepository despesaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Transactional
     public void editarCategoria(Integer id, CategoriaRequestDTO data, Double valor) {
@@ -72,4 +76,34 @@ public class CategoriaService {
         return categoriaRepository.findAll();
     }
 
+    public void cadastrarCategoria(CategoriaRequestDTO data, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email);
+
+        if (usuario != null) {
+            // Verifica se a lista de despesas não é nula antes de iterar
+            List<Despesa> despesas = new ArrayList<>();
+            if (data.despesas() != null) {
+                for (Integer idDespesa : data.despesas()) {
+                    Despesa despesa = despesaRepository.findById(idDespesa).orElse(null);
+
+                    // Verifica se a despesa encontrada não é nula antes de adicioná-la à lista
+                    if (despesa != null) {
+                        despesas.add(despesa);
+                    }
+                }
+            }
+
+
+            // Adiciona a nova categoria à lista de categorias do usuário
+            categoriaRepository.save(new Categoria(data.nome(), usuarioRepository.findByEmail(email), data.limite(), data.valorTotalMensal(), despesas));
+            //usuario.getCategorias().add(new Categoria(data.nome(), usuarioRepository.findByEmail(email), data.limite(), data.valorTotalMensal(), despesas));
+            // Salva as alterações no banco de dados
+            usuarioRepository.save(usuario);
+
+        } else {
+            // Lida com o caso em que o usuário não foi encontrado
+            // Pode lançar uma exceção ou lidar de outra forma conforme necessário
+            throw new EntityNotFoundException("Usuário não encontrado");
+        }
+    }
 }

@@ -41,5 +41,19 @@ public class PaginaController {
         return "listagemdespesas.html";
     }
 
+    @GetMapping("/cadastrocategoria")
+    public String cadastroCategoria(){
+        return "cadastrocategoria.html";
+    }
+
+    @GetMapping("/controleporcategoria")
+    public String controlePorCategoria(){
+        return "controleporcategoria.html";
+    }
+
+    @GetMapping("/perfil")
+    public String perfil(){
+        return "perfil.html";
+    }
 
 }

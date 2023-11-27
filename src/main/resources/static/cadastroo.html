@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Usuário</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/estilizacao/cadastro/cadastro.css">
 </head>
 <body>
 
 <div class="container">
+
     <h2>Cadastro de Usuário</h2>
     <form id="cadastroForm">
         <label for="nomeCompleto">Nome:</label>
@@ -25,9 +26,9 @@
 
         <label for="genero">Gênero:</label>
         <select id="genero" name="genero" required>
-            <option value="Masculino">Masculino</option>
-            <option value="Feminino">Feminino</option>
-            <option value="Outro">Outro</option>
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+            <option value="outro">Outro</option>
         </select>
 
         <button type="button" onclick="enviarCadastro()">Cadastrar</button>
@@ -37,6 +38,6 @@
 
 </div>
 
-<script src="script.js"></script>
+<script src="/js/categoria/cadastroCategoria.js"></script>
 </body>
 </html>

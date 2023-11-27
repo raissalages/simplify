@@ -8,7 +8,8 @@ import java.util.Optional;
 
 public record DespesaRequestDTO( String descricao,
                                  @Positive double valor,
-                                Date data,
+
+                                 Date data,
                                  Integer usuario,
                                  Integer categoria) {
 }

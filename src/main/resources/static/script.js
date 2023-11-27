@@ -14,6 +14,7 @@ function enviarCadastro() {
 			email: email,
 			genero: genero,
 			dataNascimento: dataNascimento,
+			categorias: [],
 			despesas: []
 		};
 	}

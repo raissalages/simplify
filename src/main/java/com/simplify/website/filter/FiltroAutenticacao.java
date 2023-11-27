@@ -8,12 +8,13 @@ import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/paginainicial", "/listagemdespesas", "/cadastrodespesa"})
+@WebFilter(urlPatterns = {"/paginainicial", "/paginainicial.html", "/listagemdespesas", "/listagemdespesas.html",
+        "/cadastrodespesa", "/cadastrodespesa.html", "/cadastrocategoria", "/cadastrocategoria.html",
+        "/controleporcategoria","/controleporcategoria.html", "/perfil", "/perfil.html"})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FiltroAutenticacao implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // Initialization code, if needed
     }
 
     @Override
@@ -25,30 +26,19 @@ public class FiltroAutenticacao implements Filter {
         HttpSession session = httpRequest.getSession(false);
         String loginURL = httpRequest.getContextPath() + "/login";
 
-        boolean loginRequest = httpRequest.getRequestURI().equals(loginURL);
 
-        // Check if the user is authenticated (you can customize this condition)
         if (session != null && session.getAttribute("usuarioAutenticado") != null) {
-            System.out.println(loginRequest);
-            System.out.println();
-            // User is authenticated, continue with the request
-            System.out.println("Usuário autenticado. Continuando com a requisição.");
-
             chain.doFilter(request, response);
         } else {
-            // User is not authenticated, redirect to the login page
-            System.out.println("Usuário não autenticado. Redirecionando para a página de login.");
 
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
             return;
         }
-        System.out.println("Filtro de Autenticação: Concluído");
 
 
     }
 
     @Override
     public void destroy() {
-        // Cleanup code, if needed
     }
 }

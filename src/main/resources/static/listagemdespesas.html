@@ -4,60 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listagem de Despesas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            flex-direction: column;
-        }
+    <link rel="stylesheet" href="listagemdespesa.css">
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%; /* Ajuste a largura conforme necessário */
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        button {
-            background-color: #4caf50;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #error-message {
-            color: red;
-        }
-    </style>
 </head>
 <body>
 
@@ -66,9 +14,6 @@
     <div id="filtros">
         <label for="nome">Nome:</label>
         <input type="text" id="nome" oninput="aplicarFiltros()">
-
-        <label for="periodo">Período:</label>
-        <input type="date" id="periodo"> até <input type="date" id="filtroPeriodoFim">
 
         <label for="categoria">Categoria:</label>
         <select id="categoria" onchange="aplicarFiltros()">
@@ -98,8 +43,11 @@
         <tbody id="listaDespesas"></tbody>
     </table>
 
+    <p><a href="/cadastrodespesa">Cadastre uma nova despesa</a></p>
+
 </div>
-<script>
+<script src="despesas.js">
+/*
     function formatarData(dataString) {
         // Cria um objeto Date a partir da string
         const data = new Date(dataString);
@@ -114,6 +62,21 @@
 
         return dataFormatada;
     }
+
+    function formatarDataDisplay(dataString) {
+    // Cria um objeto Date a partir da string
+    const data = new Date(dataString);
+
+    // Obtém ano, mês e dia
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa do zero, então adicionamos 1
+    const dia = String(data.getDate()).padStart(2, '0');
+
+    // Formata a data no formato desejado (yyyy-MM-dd)
+    const dataFormatada = `${ano}-${mes}-${dia}`;
+
+    return dataFormatada;
+}
 
     function carregarCategorias() {
     const selectCategoria = document.getElementById('categoria');
@@ -145,14 +108,32 @@
             });
     }
 
+    function carregarCategoriasPopUp(idSelect) {
+    const selectCategoria = document.getElementById(idSelect);
+
+    // Limpa as opções existentes
+    selectCategoria.innerHTML = '<option value="">Categorias</option>';
+
+    // Busca as categorias no backend
+    fetch('http://localhost:8080/categoria/listar-categorias')
+        .then(response => response.json())
+        .then(categorias => {
+            categorias.forEach(categoria => {
+                const option = document.createElement('option');
+                //option.value = categoria.id;
+                option.textContent = categoria.nome;
+                selectCategoria.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Erro ao buscar categorias:', error));
+    }
+
     // Função para buscar e exibir despesas
     function carregarDespesas() {
         fetch('http://localhost:8080/despesa/despesas')
             .then(response => response.json())
             .then(despesas => {
                 const listaDespesas = document.getElementById('listaDespesas');
-
-
 
                 despesas.forEach(despesa => {
                     const itemLista = document.createElement('tr');
@@ -203,8 +184,6 @@
 
 function aplicarFiltros() {
     const filtroNome = document.getElementById('nome').value.toLowerCase();
-    const filtroPeriodo = document.getElementById('periodo').value;
-    const periodoFim = document.getElementById('filtroPeriodoFim').value;
     const filtroCategoria = document.getElementById('categoria').value;
     const filtroValorMin = parseFloat(document.getElementById('valorMin').value) || 0;
     const filtroValorMax = parseFloat(document.getElementById('valorMax').value) || Number.MAX_VALUE;
@@ -267,12 +246,112 @@ function limparFiltros() {
     // Chame a função ao carregar a página
 
 
+
+
+async function editarDespesa(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/despesa/${id}`);
+        const despesa = await response.json();
+        exibirPopUpEdicao(despesa);
+    } catch (error) {
+        console.error('Erro ao obter detalhes da despesa:', error);
+    }
+}
+
+function exibirPopUpEdicao(despesa) {
+    carregarCategorias('categoriaPopUp');
+    console.log(despesa.categoria);
+
+
+    const popUpConteudo = `
+        <h2>Editar Despesa</h2>
+        <span class="pop-up-close" onclick="fecharPopUp()">&times;</span>
+
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" value="${despesa.descricao}" required>
+
+        <label for="valor">Valor:</label>
+        <input type="number" id="valor" value="${despesa.valor}" step="0.01" required>
+
+        <label for="data">Data:</label>
+        <input type="date" id="data" value="${formatarDataDisplay(despesa.data)}" required>
+
+        <label for="categoriaPopUp">Categoria:</label>
+        <select id="categoriaPopUp" required>
+            <!-- Opções de categoria serão preenchidas dinamicamente do backend -->
+        </select>
+
+        <button onclick="atualizarDespesa(${despesa.id})">Atualizar Despesa</button>
+    `;
+
+    // Crie um elemento div para o pop-up
+    const popUpDiv = document.createElement('div');
+    popUpDiv.classList.add('pop-up');
+    popUpDiv.innerHTML = popUpConteudo;
+
+    // Adicione o pop-up ao corpo do documento
+    document.body.appendChild(popUpDiv);
+
+    // Carregue as categorias para preencher o dropdown no pop-up
+    //obterNomeCategoria(despesa.categoria) // Correção: use despesa.categoria.id
+
+    obterNomeCategoria(despesa.categoria)  // Use despesa.categoria.id
+        .then(nomeCategoria => {
+            const categoriaDropdown = document.getElementById('categoriaPopUp');
+            categoriaDropdown.value = nomeCategoria;
+        })
+        .catch(error => console.error('Erro ao obter nome da categoria:', error));
+    }
+
+function atualizarDespesa(id) {
+    const descricao = document.getElementById('descricao').value;
+    const valor = parseFloat(document.getElementById('valor').value);
+    const data = document.getElementById('data').value;
+    const categoria = document.getElementById('categoria').value;
+
+
+    // Construa o objeto de despesa atualizado
+    const despesaAtualizada = {
+        descricao: descricao,
+        valor: valor,
+        data: data,
+        categoria: { id: categoria }
+    };
+
+    // Envie a despesa atualizada para o servidor usando o método PUT
+    fetch(`http://localhost:8080/despesa/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(despesaAtualizada),
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Despesa atualizada com sucesso!');
+            // Feche o pop-up após a atualização bem-sucedida
+            fecharPopUp();
+        } else {
+            alert('Erro ao atualizar despesa.');
+        }
+    })
+    .catch(error => console.error('Erro na requisição de atualização:', error));
+}
+
+function fecharPopUp() {
+    // Remova o pop-up do corpo do documento
+    const popUpDiv = document.querySelector('.pop-up');
+    if (popUpDiv) {
+        document.body.removeChild(popUpDiv);
+    }
+}
+
     carregarCategorias();
 
 
 
     carregarDespesas();
-
+*/
 
 </script>
 

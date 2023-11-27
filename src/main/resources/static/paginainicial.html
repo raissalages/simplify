@@ -20,7 +20,6 @@
         #menu {
             display: flex;
             flex-direction: column;
-            align-items: center;
             gap: 10px;
         }
 
@@ -43,17 +42,31 @@
 <h1>Bem-vindo ao Simplify - Controle de Gastos</h1>
 
 <div id="menu">
-    <a href="/cadastro" title="Cadastro de Usuário">Cadastro</a>
     <a href="/listagemdespesas" title="Listagem de Despesas">Listagem de Despesas</a>
     <a href="/cadastrodespesa" title="Cadastro de Despesa">Cadastro de Despesa</a>
-    <a href="/categorias" title="Categorias">
-        <span>Categorias</span>
-        <ul>
-            <li><a href="/cadastronovacategoria">Cadastrar Nova Categoria</a></li>
-            <li><a href="/controleporcategoria">Controle por Categoria</a></li>
-        </ul>
-    </a>
-</div>
+    <a href="/cadastrocategoria">Cadastrar Nova Categoria</a>
+    <a href="/controleporcategoria">Controle por Categoria</a>
+    <a href="/perfil">Meu perfil</a>
+    <a href="#" onclick="logout()">Logout</a>
 
+</div>
+<script>
+    function logout() {
+        fetch('/usuario/logout', { method: 'POST' }) // Ou o caminho do seu endpoint de logout
+            .then(response => {
+                if (response.ok) {
+                    // Se o logout for bem-sucedido, redirecione para a página de login
+                    window.location.href = '/login'; // Ou o caminho da sua página de login
+                } else {
+                    // Lógica para lidar com falha no logout, se necessário
+                    console.error('Erro ao realizar logout.');
+                }
+            })
+            .catch(error => {
+                // Lógica para lidar com erros de rede ou outros
+                console.error('Erro ao realizar logout:', error);
+            });
+    }
+</script>
 </body>
 </html>

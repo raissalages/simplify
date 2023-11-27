@@ -25,7 +25,9 @@ public class Despesa {
     private Date data;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "usuario_id")
+    @JsonBackReference
     private Usuario usuario;
+
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "categoria_id")
     @JsonBackReference
@@ -35,10 +37,8 @@ public class Despesa {
         this.descricao = data.descricao();
         this.valor = data.valor();
         this.usuario = new Usuario();
-
         this.usuario.setId(data.usuario());
         this.categoria = new Categoria(); // Certifique-se de inicializar a categoria também, se necessário.
-
         this.categoria.setId(data.categoria());
     }
 
@@ -48,5 +48,17 @@ public class Despesa {
         this.data = data;
         this.usuario = usuario;
         this.categoria = categoria;
+    }
+
+    @Override
+    public String toString() {
+        return "Despesa{" +
+                "id=" + id +
+                ", descricao='" + descricao + '\'' +
+                ", valor=" + valor +
+                ", data=" + data +
+                ", usuario=" + (usuario != null ? usuario.getId() : "null") +
+                ", categoria=" + (categoria != null ? categoria.getId() : "null") +
+                '}';
     }
 }

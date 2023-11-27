@@ -39,6 +39,7 @@ public class DespesaService {
 
         categoriaService.editarCategoria(data.categoria(), new CategoriaRequestDTO(
                 categoriaRepository.findById(data.categoria()).get().getNome(),
+                categoriaRepository.findById(data.categoria()).get().getUsuario().getId(),
                 categoriaRepository.findById(data.categoria()).get().getLimite(),
                 ((categoriaRepository.findById(data.categoria()).get().getValorTotalMensal()) + data.valor()) ,
                 idDespesas

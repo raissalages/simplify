@@ -1,4 +1,4 @@
-package com.simplify.website.service;
+package com.simplify.website.Exception;
 
 public class EmailDuplicadoException extends Throwable {
     public EmailDuplicadoException(String s) {

@@ -1,6 +1,7 @@
 package com.simplify.website.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.simplify.website.dto.UsuarioRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,10 @@ public class Usuario {
     private String genero;
     @Column
     private Date dataNascimento;
+    @JsonManagedReference
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Despesa> despesas;
-
+    @JsonManagedReference
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Categoria> categorias;
     public Usuario(UsuarioRequestDTO data){
@@ -40,18 +42,28 @@ public class Usuario {
         this.senha = data.senha();
         this.genero = data.genero();
         this.dataNascimento = data.dataNascimento();
-        for(Integer despesaId : data.despesas()){
-            Despesa despesa = new Despesa();
-            despesa.setId(despesaId);
+
+        if (data.categorias() != null) {
+            for (Integer categoriaId : data.categorias()) {
+                Categoria categoria = new Categoria();
+                categoria.setId(categoriaId);
+            }
+        }
+
+        if (data.despesas() != null) {
+            for (Integer despesaId : data.despesas()) {
+                Despesa despesa = new Despesa();
+                despesa.setId(despesaId);
+            }
         }
     }
-
-    public Usuario(String nomeCompleto, String email, String senha, String genero, Date dataNascimento, List<Despesa> despesas){
+    public Usuario(String nomeCompleto, String email, String senha, String genero, Date dataNascimento, List<Categoria> categorias, List<Despesa> despesas){
         this.nomeCompleto = nomeCompleto;
         this.email = email;
         this.senha = senha;
         this.genero = genero;
         this.dataNascimento = dataNascimento;
+        this.categorias = categorias;
         this.despesas = despesas;
     }
 
@@ -63,6 +75,10 @@ public class Usuario {
         this.dataNascimento = dataNascimento;
     }
 
+    /*
+    * Método toString() com categorias e despesas nulo para evitar referências circulares.    *
+    * */
+
     @Override
     public String toString() {
         return "Usuario{" +
@@ -72,6 +88,7 @@ public class Usuario {
                 ", senha='" + senha + '\'' +
                 ", genero='" + genero + '\'' +
                 ", dataNascimento=" + dataNascimento +
+                ", categorias=" + (categorias != null ? categorias.size() + " categorias" : "null") +
                 ", despesas=" + (despesas != null ? despesas.size() + " despesas" : "null") +
                 '}';
     }

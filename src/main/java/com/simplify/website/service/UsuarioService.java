@@ -1,18 +1,20 @@
 package com.simplify.website.service;
 
-import com.google.protobuf.ServiceException;
+import com.simplify.website.Exception.EmailDuplicadoException;
 import com.simplify.website.dto.UsuarioRequestDTO;
+import com.simplify.website.model.Categoria;
 import com.simplify.website.model.Despesa;
 import com.simplify.website.model.Usuario;
+import com.simplify.website.repository.CategoriaRepository;
 import com.simplify.website.repository.DespesaRepository;
 import com.simplify.website.repository.UsuarioRepository;
+import com.simplify.website.util.Criptografia;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -20,6 +22,8 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private DespesaRepository despesaRepository;
+    @Autowired
+    private CategoriaRepository categoriaRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
 
@@ -54,7 +58,20 @@ public class UsuarioService {
                     }
                 }
             }
-            usuarioRepository.save(new Usuario(usuario.nomeCompleto(), usuario.email(), usuario.senha(), usuario.genero(), usuario.dataNascimento(), despesas));
+
+            List<Categoria> categorias = new ArrayList<>();
+            // Verifica se a lista de despesas não é nula antes de iterar
+            if (usuario.categorias() != null) {
+                for(Integer id : usuario.categorias()){
+                    Categoria categoria = categoriaRepository.findById(id).orElse(null);
+
+                    // Verifica se a despesa encontrada não é nula antes de adicioná-la à lista
+                    if (categoria != null) {
+                        categorias.add(categoria);
+                    }
+                }
+            }
+            usuarioRepository.save(new Usuario(usuario.nomeCompleto(), usuario.email(), Criptografia.encriptaSenha(usuario.senha()), usuario.genero(), usuario.dataNascimento(), categorias, despesas));
         }
     }
 
